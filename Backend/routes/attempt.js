@@ -69,8 +69,8 @@ router.post("/start", authMiddleware, async (req, res) => {
         });
       }
 
-      // Time remaining - continue quiz
-      const remainingTime = Math.ceil(quiz.timeLimit - timeElapsed);
+      // Time remaining - continue quiz (in seconds for precision)
+      const remainingTimeSeconds = Math.max(0, Math.round((quiz.timeLimit - timeElapsed) * 60));
       const totalQuestions = await Question.countDocuments({ quizId });
 
       // Filter out removed answers (null/undefined) and convert questionId to string
@@ -88,7 +88,8 @@ router.post("/start", authMiddleware, async (req, res) => {
         quizId: quizId,
         quizTitle: quiz.title,
         timeLimit: quiz.timeLimit,
-        remainingTime: remainingTime,
+        remainingTime: remainingTimeSeconds,
+        remainingTimeUnit: "seconds",
         totalQuestions: totalQuestions,
         attemptedAnswers: validAnswers
       });
@@ -111,7 +112,8 @@ router.post("/start", authMiddleware, async (req, res) => {
       quizId: quizId,
       quizTitle: quiz.title,
       timeLimit: quiz.timeLimit,
-      remainingTime: quiz.timeLimit,
+      remainingTime: quiz.timeLimit * 60,
+      remainingTimeUnit: "seconds",
       totalQuestions: totalQuestions
     });
 

@@ -14,6 +14,7 @@ function QuizAnalytics() {
     });
     const [quiz, setQuiz] = useState(null);
     const [attempts, setAttempts] = useState([]);
+    const [questions, setQuestions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [publishing, setPublishing] = useState(false);
@@ -36,11 +37,16 @@ function QuizAnalytics() {
     const fetchAnalytics = async () => {
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.get(`http://localhost:5000/api/quiz/analytics/${quizId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setQuiz(res.data.quiz);
-            setAttempts(res.data.attempts);
+            const [analyticsRes, questionsRes] = await Promise.all([
+                axios.get(`http://localhost:5000/api/quiz/analytics/${quizId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                }),
+                axios.get(`http://localhost:5000/api/quiz/${quizId}/questions`)
+            ]);
+
+            setQuiz(analyticsRes.data.quiz);
+            setAttempts(analyticsRes.data.attempts);
+            setQuestions(questionsRes.data.questions || []);
         } catch (err) {
             console.error("Error fetching analytics:", err);
             setError(err.response?.data?.error || "Failed to fetch analytics");
@@ -51,7 +57,6 @@ function QuizAnalytics() {
 
     const handlePublishResults = async () => {
         setPublishing(true);
-        setError("");
         try {
             const token = localStorage.getItem("token");
             await axios.post(
@@ -112,7 +117,7 @@ function QuizAnalytics() {
                         <div className="bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-6 mb-6">
                             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-14 h-14 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-2xl flex items-center justify-center">
+                                    <div className="w-14 h-14 bg-linear-to-br from-yellow-500 to-orange-600 rounded-2xl flex items-center justify-center">
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                         </svg>
@@ -143,7 +148,7 @@ function QuizAnalytics() {
                                         onClick={handlePublishResults}
                                         disabled={publishing || !quiz.isExpired}
                                         className={`flex items-center gap-2 font-medium py-3 px-6 rounded-xl transition-all duration-200 ${quiz.isExpired
-                                                ? "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
+                                                ? "bg-linear-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
                                                 : "bg-slate-700/50 text-slate-400 cursor-not-allowed"
                                             }`}
                                     >
@@ -218,6 +223,50 @@ function QuizAnalytics() {
                                             ))}
                                         </tbody>
                                     </table>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Question Preview */}
+                        <div className="mt-6 bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl overflow-hidden">
+                            <div className="p-6 border-b border-slate-700/50">
+                                <h3 className="text-lg font-semibold text-white">
+                                    Quiz Questions & Options ({questions.length})
+                                </h3>
+                            </div>
+
+                            {questions.length === 0 ? (
+                                <div className="p-12 text-center">
+                                    <p className="text-slate-400">No questions found for this quiz</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-4 p-6">
+                                    {questions.map((question, index) => (
+                                        <div key={question.questionID || index} className="bg-slate-700/30 border border-slate-700/40 rounded-2xl p-5">
+                                            <div className="flex items-start gap-3 mb-4">
+                                                <span className="w-8 h-8 rounded-full bg-teal-500/20 text-teal-400 flex items-center justify-center text-sm font-bold">
+                                                    {index + 1}
+                                                </span>
+                                                <p className="text-white font-medium leading-relaxed flex-1">
+                                                    {question.questionText}
+                                                </p>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-11">
+                                                {question.options.map((option, optionIndex) => (
+                                                    <div
+                                                        key={optionIndex}
+                                                        className="flex items-center gap-3 rounded-xl border border-slate-600/50 bg-slate-800/40 px-4 py-3 text-slate-300"
+                                                    >
+                                                        <span className="w-7 h-7 rounded-full bg-slate-600 text-white flex items-center justify-center text-xs font-bold">
+                                                            {String.fromCharCode(65 + optionIndex)}
+                                                        </span>
+                                                        <span className="flex-1">{option}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             )}
                         </div>

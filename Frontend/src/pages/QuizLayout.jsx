@@ -65,8 +65,8 @@ function QuizLayout() {
                 setAttemptId(attemptRes.data.attemptId);
                 setTotalQuestions(attemptRes.data.totalQuestions);
 
-                // Set remaining time (convert minutes to seconds)
-                const remainingSeconds = attemptRes.data.remainingTime * 60;
+                // Set remaining time (backend now returns seconds directly)
+                const remainingSeconds = attemptRes.data.remainingTime;
                 setTimeRemaining(remainingSeconds);
                 setTotalTime(attemptRes.data.timeLimit * 60);
 

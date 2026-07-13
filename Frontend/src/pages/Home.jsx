@@ -9,6 +9,7 @@ function Home() {
 	const [user, setUser] = useState(null);
 	const [userAttempts, setUserAttempts] = useState({});
 	const [quizResults, setQuizResults] = useState({});
+	const [activeFilter, setActiveFilter] = useState("all");
 
 	const navigate = useNavigate();
 
@@ -89,6 +90,26 @@ function Home() {
 		navigate(`/result/${quizId}`)
 	}
 
+	// Categorize quizzes for filtering
+	const getQuizCategory = (quiz) => {
+		const attempted = !!userAttempts[quiz._id];
+		if (attempted) return "attempted";
+		if (!quiz.isExpired) return "live";
+		return "missed";
+	};
+
+	const filteredQuizzes = quizzes.filter((quiz) => {
+		if (activeFilter === "all") return true;
+		return getQuizCategory(quiz) === activeFilter;
+	});
+
+	const filterCounts = {
+		all: quizzes.length,
+		live: quizzes.filter(q => getQuizCategory(q) === "live").length,
+		attempted: quizzes.filter(q => getQuizCategory(q) === "attempted").length,
+		missed: quizzes.filter(q => getQuizCategory(q) === "missed").length,
+	};
+
 	return (
 		<div className="min-h-screen">
 			{/* Header */}
@@ -126,7 +147,41 @@ function Home() {
 			<main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 				<div className="mb-8">
 					<h2 className="text-3xl font-bold text-white mb-2">Available Quizzes</h2>
-					<p className="text-slate-400">Choose a quiz to test your knowledge</p>
+					<p className="text-slate-400 mb-6">Choose a quiz to test your knowledge</p>
+
+					{/* Filter Tabs */}
+					{!loading && !error && quizzes.length > 0 && (
+						<div className="flex flex-wrap gap-2">
+							{[
+								{ key: "all", label: "All Quizzes" },
+								{ key: "live", label: "Live" },
+								{ key: "attempted", label: "Attempted" },
+								{ key: "missed", label: "Missed" },
+							].map((filter) => (
+								<button
+									key={filter.key}
+									onClick={() => setActiveFilter(filter.key)}
+									className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+										activeFilter === filter.key
+											? filter.key === "all" ? "bg-blue-500 text-white shadow-lg shadow-blue-500/25"
+											: filter.key === "live" ? "bg-green-500 text-white shadow-lg shadow-green-500/25"
+											: filter.key === "attempted" ? "bg-yellow-500 text-white shadow-lg shadow-yellow-500/25"
+											: "bg-slate-500 text-white shadow-lg shadow-slate-500/25"
+											: "bg-slate-800/70 border border-slate-700/50 text-slate-400 hover:text-white hover:border-slate-600"
+									}`}
+								>
+									{filter.label}
+									<span className={`min-w-[20px] h-5 flex items-center justify-center text-xs rounded-full px-1.5 ${
+										activeFilter === filter.key
+											? "bg-white/20 text-white"
+											: "bg-slate-700/70 text-slate-400"
+									}`}>
+										{filterCounts[filter.key]}
+									</span>
+								</button>
+							))}
+						</div>
+					)}
 				</div>
 
 				{/* Loading State */}
@@ -170,8 +225,20 @@ function Home() {
 
 				{/* Quiz Grid */}
 				{!loading && !error && quizzes.length > 0 && (
+					<>
+					{filteredQuizzes.length === 0 ? (
+						<div className="bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-12 text-center">
+							<div className="w-16 h-16 bg-slate-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
+								<svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+								</svg>
+							</div>
+							<h3 className="text-lg font-semibold text-white mb-1">No quizzes in this category</h3>
+							<p className="text-slate-400 text-sm">Try selecting a different filter above</p>
+						</div>
+					) : (
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-						{quizzes.map((quiz, index) => (
+						{filteredQuizzes.map((quiz, index) => (
 							<div
 								key={quiz._id || index}
 								className="group bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 hover:border-blue-500/50 hover:bg-slate-800/70 transition-all duration-300 cursor-pointer"
@@ -252,6 +319,8 @@ function Home() {
 							</div>
 						))}
 					</div>
+					)}
+					</>
 				)}
 			</main>
 		</div>

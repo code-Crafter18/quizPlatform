@@ -15,6 +15,9 @@ function ManageQuizzes() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [publishing, setPublishing] = useState(null);
+    const [viewingQuiz, setViewingQuiz] = useState(null);
+    const [viewQuestions, setViewQuestions] = useState([]);
+    const [loadingQuestions, setLoadingQuestions] = useState(false);
 
     const isInstructor = userRole === "instructor";
     const dashboardPath = isInstructor ? "/instructor" : "/admin";
@@ -68,6 +71,28 @@ function ManageQuizzes() {
         } finally {
             setPublishing(null);
         }
+    };
+
+    const handleViewQuestions = async (quiz) => {
+        setViewingQuiz(quiz);
+        setLoadingQuestions(true);
+        setViewQuestions([]);
+        try {
+            const token = localStorage.getItem("token");
+            const res = await axios.get(`http://localhost:5000/api/quiz/${quiz._id}/view-questions`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setViewQuestions(res.data.questions || []);
+        } catch (err) {
+            console.error("Error fetching questions:", err);
+        } finally {
+            setLoadingQuestions(false);
+        }
+    };
+
+    const closeQuestionsModal = () => {
+        setViewingQuiz(null);
+        setViewQuestions([]);
     };
 
     return (
@@ -186,6 +211,18 @@ function ManageQuizzes() {
                                     </div>
                                 </div>
 
+                                {/* View Questions Button - always visible */}
+                                <button
+                                    onClick={() => handleViewQuestions(quiz)}
+                                    className="w-full flex items-center justify-center gap-2 bg-slate-700/50 hover:bg-slate-700 border border-slate-600/50 text-slate-300 hover:text-white font-medium py-2.5 px-4 rounded-xl transition-all duration-200 mb-2"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                    View Questions ({quiz.questionCount})
+                                </button>
+
                                 {quiz.isPublished ? (
                                     <div className="w-full flex items-center justify-center gap-2 bg-slate-700/50 text-slate-400 font-medium py-2.5 px-4 rounded-xl cursor-not-allowed">
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -231,6 +268,85 @@ function ManageQuizzes() {
                                 )}
                             </div>
                         ))}
+                    </div>
+                )}
+
+                {/* View Questions Modal */}
+                {viewingQuiz && (
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeQuestionsModal}>
+                        <div
+                            className="bg-slate-900 border border-slate-700/50 rounded-3xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {/* Modal Header */}
+                            <div className="flex items-center justify-between p-6 border-b border-slate-700/50">
+                                <div>
+                                    <h3 className="text-xl font-bold text-white">{viewingQuiz.title}</h3>
+                                    <p className="text-slate-400 text-sm mt-1">{viewQuestions.length} question{viewQuestions.length !== 1 ? "s" : ""}</p>
+                                </div>
+                                <button
+                                    onClick={closeQuestionsModal}
+                                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            {/* Modal Body */}
+                            <div className="overflow-y-auto p-6 space-y-4">
+                                {loadingQuestions ? (
+                                    <div className="flex items-center justify-center py-12">
+                                        <div className="w-8 h-8 border-4 border-teal-500/30 border-t-teal-500 rounded-full animate-spin"></div>
+                                    </div>
+                                ) : viewQuestions.length === 0 ? (
+                                    <div className="text-center py-12">
+                                        <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        </div>
+                                        <p className="text-slate-400">No questions added yet</p>
+                                    </div>
+                                ) : (
+                                    viewQuestions.map((q, index) => (
+                                        <div key={q.questionID || index} className="bg-slate-800/70 border border-slate-700/50 rounded-2xl p-5">
+                                            <p className="text-white font-medium mb-3">
+                                                <span className="text-teal-400 mr-2">Q{index + 1}.</span>
+                                                {q.questionText}
+                                            </p>
+                                            <div className="space-y-2">
+                                                {q.options.map((opt, optIdx) => (
+                                                    <div
+                                                        key={optIdx}
+                                                        className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm ${
+                                                            optIdx === q.correctOption
+                                                                ? "bg-green-500/15 border border-green-500/40 text-green-300"
+                                                                : "bg-slate-700/40 border border-slate-600/30 text-slate-300"
+                                                        }`}
+                                                    >
+                                                        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                                                            optIdx === q.correctOption
+                                                                ? "bg-green-500/30 text-green-300"
+                                                                : "bg-slate-600/50 text-slate-400"
+                                                        }`}>
+                                                            {String.fromCharCode(65 + optIdx)}
+                                                        </span>
+                                                        <span>{opt}</span>
+                                                        {optIdx === q.correctOption && (
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-auto text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                            </svg>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
                     </div>
                 )}
             </main>
