@@ -47,8 +47,8 @@ function Register() {
         throw new Error(data.error || "Registration failed");
       }
 
-      // Registration successful - navigate to login
-      navigate("/login");
+      // OTP sent successfully - navigate to OTP verification page
+      navigate("/verify-email", { state: { email: formData.email } });
     } catch (err) {
       setError(err.message);
     } finally {

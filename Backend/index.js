@@ -5,6 +5,8 @@ import cors from "cors";
 import User from "./models/user.js";
 import Question from "./models/question.js";
 import registerrouter from "./routes/register.js";
+import verifyOTPRouter from "./routes/verifyOTP.js";
+import resendOTPRouter from "./routes/resendOTP.js";
 import loadQrouter from "./routes/loadQuestion.js";
 import loginrouter from "./routes/login.js";
 import addQuizRouter from "./routes/addQuiz.js";
@@ -56,7 +58,7 @@ app.use("/api/quiz", authMiddleware, analyticsRouter);
 app.use("/api/quiz", authMiddleware, viewQuestionsRouter);
 app.use("/api/admin", authMiddleware, adminStatsRouter);
 app.use("/api/admin", authMiddleware, manageUsersRouter);
-app.use("/api/user", registerrouter, loginrouter);
+app.use("/api/user", registerrouter, verifyOTPRouter, resendOTPRouter, loginrouter);
 app.use("/api/user", authMiddleware, userSettingsRouter);
 app.use("/api/ai", authMiddleware, aiQuizRoutes);
 

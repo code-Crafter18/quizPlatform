@@ -13,6 +13,7 @@ import QuizAnalytics from './pages/QuizAnalytics';
 import StudentResult from './pages/StudentResult';
 import ManageUsers from './pages/ManageUsers';
 import Settings from './pages/Settings';
+import VerifyOTP from './pages/VerifyOTP';
 
 function Layout({ children }) {
   const location = useLocation();
@@ -42,6 +43,7 @@ function App() {
           <Route path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/verify-email" element={<VerifyOTP />} />
           <Route path="/home" element={<Home />} />
           <Route path="/admin" element={<AdminHome />} />
           <Route path="/admin/manage-quizzes" element={<ManageQuizzes />} />
