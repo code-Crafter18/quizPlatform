@@ -63,7 +63,7 @@ app.use("/api/user", authMiddleware, userSettingsRouter);
 app.use("/api/ai", authMiddleware, aiQuizRoutes);
 
 
-mongoose.connect("mongodb://127.0.0.1:27017/projects", { dbName: "projects" })
+mongoose.connect(process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/projects", { dbName: "projects" })
   .then(() => {
     console.log("MongoDB connected");
     import("./utils/autoSubmit.js").then(({ startAutoSubmitScheduler }) => {
