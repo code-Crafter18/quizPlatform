@@ -54,7 +54,7 @@ function CreateQuiz() {
         try {
             const token = localStorage.getItem("token");
             const res = await axios.post(
-                "http://localhost:5000/api/quiz/addquiz",
+                `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quiz/addquiz`,
                 formData,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -86,7 +86,7 @@ function CreateQuiz() {
                 .join("\n");
 
             const res = await axios.post(
-                "http://localhost:5000/api/ai/generate",
+                `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/ai/generate`,
                 {
                     prompt,
                     timeLimit: aiTimeLimit,

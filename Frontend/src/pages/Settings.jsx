@@ -44,7 +44,7 @@ function Settings() {
         try {
             const token = localStorage.getItem("token");
             const res = await axios.patch(
-                "http://localhost:5000/api/user/profile",
+                `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/user/profile`,
                 { name: name.trim() },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -75,7 +75,7 @@ function Settings() {
         try {
             const token = localStorage.getItem("token");
             await axios.patch(
-                "http://localhost:5000/api/user/profile",
+                `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/user/profile`,
                 { currentPassword, newPassword },
                 { headers: { Authorization: `Bearer ${token}` } }
             );

@@ -23,7 +23,7 @@ function ManageUsers() {
         setLoading(true);
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.get("http://localhost:5000/api/admin/users", {
+            const res = await axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/admin/users`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setUsers(res.data.users);
@@ -37,7 +37,7 @@ function ManageUsers() {
     const handleDelete = async (userId) => {
         try {
             const token = localStorage.getItem("token");
-            await axios.delete(`http://localhost:5000/api/admin/users/${userId}`, {
+            await axios.delete(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/admin/users/${userId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setDeleteConfirm(null);

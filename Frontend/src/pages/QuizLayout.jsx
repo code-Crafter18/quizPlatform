@@ -53,7 +53,7 @@ function QuizLayout() {
 
             // First, check/start attempt
             const attemptRes = await axios.post(
-                "http://localhost:5000/api/quiz/start",
+                `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quiz/start`,
                 { quizId },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -111,7 +111,7 @@ function QuizLayout() {
     const fetchQuestions = async () => {
         try {
             // Fetch questions for this quiz
-            const res = await axios.get(`http://localhost:5000/api/quiz/${quizId}/questions`);
+            const res = await axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quiz/${quizId}/questions`);
             console.log("Questions response:", res.data);
             setQuestions(res.data.questions || []);
             setLoading(false);
@@ -138,7 +138,7 @@ function QuizLayout() {
         try {
             const token = localStorage.getItem("token");
             await axios.post(
-                "http://localhost:5000/api/quiz/save-answer",
+                `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quiz/save-answer`,
                 { attemptId, questionId, selectedOption: optionIndex },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -158,7 +158,7 @@ function QuizLayout() {
         try {
             const token = localStorage.getItem("token");
             await axios.post(
-                "http://localhost:5000/api/quiz/save-answer",
+                `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quiz/save-answer`,
                 { attemptId, questionId, selectedOption: null },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -196,7 +196,7 @@ function QuizLayout() {
             const token = localStorage.getItem("token");
 
             const res = await axios.post(
-                "http://localhost:5000/api/quiz/submit",
+                `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quiz/submit`,
                 { attemptId },
                 { headers: { Authorization: `Bearer ${token}` } }
             );

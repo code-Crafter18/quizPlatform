@@ -42,7 +42,7 @@ function ManageQuizzes() {
     const fetchQuizzes = async () => {
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.get("http://localhost:5000/api/quiz/admin/quizzes", {
+            const res = await axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quiz/admin/quizzes`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setQuizzes(res.data.quizzes);
@@ -59,7 +59,7 @@ function ManageQuizzes() {
         try {
             const token = localStorage.getItem("token");
             await axios.patch(
-                `http://localhost:5000/api/quiz/${quizId}/publish`,
+                `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quiz/${quizId}/publish`,
                 {},
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -79,7 +79,7 @@ function ManageQuizzes() {
         setViewQuestions([]);
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.get(`http://localhost:5000/api/quiz/${quiz._id}/view-questions`, {
+            const res = await axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quiz/${quiz._id}/view-questions`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setViewQuestions(res.data.questions || []);

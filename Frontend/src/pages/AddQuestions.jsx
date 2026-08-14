@@ -97,7 +97,7 @@ function AddQuestions() {
                 const filteredOptions = question.options.filter(opt => opt.trim() !== "");
 
                 await axios.post(
-                    "http://localhost:5000/api/quiz/addquestion",
+                    `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quiz/addquestion`,
                     {
                         quizId,
                         questionText: question.questionText,

@@ -26,7 +26,7 @@ function Home() {
 
 	const fetchQuizzes = async () => {
 		try {
-			const res = await axios.get("http://localhost:5000/api/quiz/quizzes");
+			const res = await axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quiz/quizzes`);
 			console.log("Quizzes response:", res.data);
 			setQuizzes(res.data.quizzes || []);
 
@@ -36,7 +36,7 @@ function Home() {
 				const resultsMap = {};
 				for (const quiz of res.data.quizzes || []) {
 					try {
-						const resultRes = await axios.get(`http://localhost:5000/api/quiz/result/${quiz._id}`, {
+						const resultRes = await axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quiz/result/${quiz._id}`, {
 							headers: { Authorization: `Bearer ${token}` }
 						});
 						resultsMap[quiz._id] = { published: true, score: resultRes.data.score, total: resultRes.data.totalQuestions };
@@ -61,7 +61,7 @@ function Home() {
 			const token = localStorage.getItem("token");
 			if (!token) return;
 
-			const res = await axios.get("http://localhost:5000/api/quiz/my-attempts", {
+			const res = await axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quiz/my-attempts`, {
 				headers: { Authorization: `Bearer ${token}` }
 			});
 

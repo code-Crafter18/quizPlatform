@@ -16,7 +16,7 @@ function StudentResult() {
     const fetchResult = async () => {
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.get(`http://localhost:5000/api/quiz/result/${quizId}`, {
+            const res = await axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quiz/result/${quizId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setResult(res.data);

@@ -38,10 +38,10 @@ function QuizAnalytics() {
         try {
             const token = localStorage.getItem("token");
             const [analyticsRes, questionsRes] = await Promise.all([
-                axios.get(`http://localhost:5000/api/quiz/analytics/${quizId}`, {
+                axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quiz/analytics/${quizId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 }),
-                axios.get(`http://localhost:5000/api/quiz/${quizId}/questions`)
+                axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quiz/${quizId}/questions`)
             ]);
 
             setQuiz(analyticsRes.data.quiz);
@@ -60,7 +60,7 @@ function QuizAnalytics() {
         try {
             const token = localStorage.getItem("token");
             await axios.post(
-                `http://localhost:5000/api/quiz/publish-results/${quizId}`,
+                `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quiz/publish-results/${quizId}`,
                 {},
                 { headers: { Authorization: `Bearer ${token}` } }
             );
