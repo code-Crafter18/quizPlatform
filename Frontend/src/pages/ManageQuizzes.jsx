@@ -223,6 +223,19 @@ function ManageQuizzes() {
                                     View Questions ({quiz.questionCount})
                                 </button>
 
+                                {/* Invite Users Button - instructor only */}
+                                {isInstructor && (
+                                    <button
+                                        onClick={() => navigate(`/instructor/invite/${quiz._id}`)}
+                                        className="w-full flex items-center justify-center gap-2 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/50 text-purple-400 hover:text-purple-300 font-medium py-2.5 px-4 rounded-xl transition-all duration-200 mb-2"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                                        </svg>
+                                        Invite Users
+                                    </button>
+                                )}
+
                                 {quiz.isPublished ? (
                                     <div className="w-full flex items-center justify-center gap-2 bg-slate-700/50 text-slate-400 font-medium py-2.5 px-4 rounded-xl cursor-not-allowed">
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

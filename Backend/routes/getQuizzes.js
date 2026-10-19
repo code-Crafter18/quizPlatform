@@ -1,17 +1,29 @@
 import express from "express";
 import Quiz from "../models/quiz.js";
+import QuizInvitation from "../models/quizInvitation.js";
 
 const getQuizzesRouter = express.Router();
 
 getQuizzesRouter.get("/quizzes", async (req, res) => {
     try {
         const now = new Date();
+        const userId = req.user._id;
 
-        const allPublishedQuizzes = await Quiz.find({ isPublished: true })
-            .select("title description timeLimit publishedAt availableFor createdAt")
+        const acceptedInvitations = await QuizInvitation.find({
+            userId,
+            status: "accepted"
+        }).select("quizId");
+
+        const acceptedQuizIds = acceptedInvitations.map(inv => inv.quizId);
+
+        const publishedQuizzes = await Quiz.find({ 
+            isPublished: true,
+            _id: { $in: acceptedQuizIds }
+        })
+            .select("title description timeLimit publishedAt availableFor createdAt resultsPublished")
             .sort({ createdAt: -1 });
 
-        const quizzesWithTime = allPublishedQuizzes.map(quiz => {
+        const quizzes = publishedQuizzes.map(quiz => {
             const publishDate = quiz.publishedAt || quiz.createdAt;
             const expiresAt = new Date(publishDate.getTime() + quiz.availableFor * 60000);
             const isExpired = now >= expiresAt;
@@ -23,23 +35,19 @@ getQuizzesRouter.get("/quizzes", async (req, res) => {
                 description: quiz.description,
                 timeLimit: quiz.timeLimit,
                 availableFor: quiz.availableFor,
-                remainingMinutes: remainingMinutes,
-                expiresAt: expiresAt,
-                isExpired: isExpired,
+                remainingMinutes,
+                expiresAt,
+                isExpired,
                 resultsPublished: quiz.resultsPublished
             };
         });
 
         return res.status(200).json({
-            totalQuizzes: quizzesWithTime.length,
-            quizzes: quizzesWithTime
+            totalQuizzes: quizzes.length,
+            quizzes
         });
-
     } catch (error) {
-        return res.status(500).json({
-            error: "Failed to fetch quizzes",
-            details: error.message
-        });
+        return res.status(500).json({ error: "Failed to fetch quizzes", details: error.message });
     }
 });
 

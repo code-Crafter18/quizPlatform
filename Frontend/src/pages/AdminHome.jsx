@@ -150,7 +150,7 @@ function AdminHome() {
 
                 {/* Quick Actions */}
                 <h3 className="text-xl font-semibold text-white mb-4">Quick Actions</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <button onClick={() => navigate("/admin/manage-users")} className="group bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 hover:border-green-500/50 hover:bg-slate-800/70 transition-all duration-300 text-left">
                             <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -172,15 +172,7 @@ function AdminHome() {
                             <p className="text-slate-400 text-sm">Promote users and manage instructor roles</p>
                         </button>
 
-                        <button onClick={() => navigate("/admin/manage-quizzes")} className="group bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 hover:border-blue-500/50 hover:bg-slate-800/70 transition-all duration-300 text-left">
-                            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                                </svg>
-                            </div>
-                            <h4 className="text-lg font-semibold text-white mb-1 group-hover:text-blue-400 transition-colors">View All Quizzes</h4>
-                            <p className="text-slate-400 text-sm">Browse and monitor all quizzes</p>
-                        </button>
+
 
                         <button onClick={() => navigate("/admin/settings")} className="group bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 hover:border-cyan-500/50 hover:bg-slate-800/70 transition-all duration-300 text-left">
                             <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-teal-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">

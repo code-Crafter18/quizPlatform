@@ -13,7 +13,10 @@ import QuizAnalytics from './pages/QuizAnalytics';
 import StudentResult from './pages/StudentResult';
 import ManageUsers from './pages/ManageUsers';
 import Settings from './pages/Settings';
-import VerifyOTP from './pages/VerifyOTP';
+
+import PendingApproval from './pages/PendingApproval';
+import Invitations from './pages/Invitations';
+import InviteUsers from './pages/InviteUsers';
 
 function Layout({ children }) {
   const location = useLocation();
@@ -43,8 +46,10 @@ function App() {
           <Route path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/verify-email" element={<VerifyOTP />} />
+
+          <Route path="/pending-approval" element={<PendingApproval />} />
           <Route path="/home" element={<Home />} />
+          <Route path="/invitations" element={<Invitations />} />
           <Route path="/admin" element={<AdminHome />} />
           <Route path="/admin/manage-quizzes" element={<ManageQuizzes />} />
           <Route path="/admin/analytics" element={<Analytics />} />
@@ -59,6 +64,7 @@ function App() {
           <Route path="/instructor/analytics" element={<Analytics />} />
           <Route path="/instructor/analytics/:quizId" element={<QuizAnalytics />} />
           <Route path="/instructor/settings" element={<Settings />} />
+          <Route path="/instructor/invite/:quizId" element={<InviteUsers />} />
           <Route path="/quiz/:quizId" element={<QuizLayout />} />
           <Route path="/result/:quizId" element={<StudentResult />} />
         </Routes>
@@ -68,5 +74,3 @@ function App() {
 }
 
 export default App;
-
-

@@ -14,18 +14,10 @@ loginrouter.post("/login", async (req, res) => {
             return res.status(400).json({ error: "email or password is invalid" });
         }
 
-        // Normally all users in the db should be verified if they registered through the new flow,
-        // but this adds an extra layer of protection if somehow unverified users are created
-        if (user.emailVerified === false) {
-             return res.status(403).json({ error: "Please verify your email before logging in." });
-        }
-
         let isMatch = false;
         if (user.password === req.body.password) {
-            // Legacy plaintext match
             isMatch = true;
         } else {
-            // Check bcrypt hash
             try {
                 isMatch = await bcrypt.compare(req.body.password, user.password);
             } catch (err) {
@@ -34,6 +26,14 @@ loginrouter.post("/login", async (req, res) => {
         }
 
         if (isMatch) {
+            // Check if instructor is approved
+            if (user.role === "instructor" && !user.isApproved) {
+                return res.status(403).json({ 
+                    error: "Your instructor account is pending admin approval.",
+                    pendingApproval: true
+                });
+            }
+
             const token = jwt.sign(
                 {
                     _id: user._id,
@@ -53,6 +53,7 @@ loginrouter.post("/login", async (req, res) => {
                     name: user.name,
                     email: user.email,
                     role: user.role,
+                    isApproved: user.isApproved,
                     emailVerified: user.emailVerified
                 }
             });

@@ -32,11 +32,13 @@ verifyOTPRouter.post("/verify-otp", async (req, res) => {
     }
 
     // OTP is correct, create the user
+    const userRole = pendingVerification.role || "user";
     const newUser = await User.create({
       name: pendingVerification.name,
       email: pendingVerification.email,
       password: pendingVerification.password,
-      role: "user",
+      role: userRole,
+      isApproved: userRole !== "instructor", // Instructors need admin approval
       emailVerified: true
     });
 
@@ -44,12 +46,15 @@ verifyOTPRouter.post("/verify-otp", async (req, res) => {
     await EmailVerification.deleteOne({ email });
 
     return res.status(201).json({
-      message: "Email verified and account created successfully",
+      message: userRole === "instructor"
+        ? "Email verified! Your instructor account is pending admin approval."
+        : "Email verified and account created successfully",
       user: {
         _id: newUser._id,
         name: newUser.name,
         email: newUser.email,
         role: newUser.role,
+        isApproved: newUser.isApproved,
         emailVerified: newUser.emailVerified
       }
     });

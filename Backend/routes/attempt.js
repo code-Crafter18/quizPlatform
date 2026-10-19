@@ -2,6 +2,7 @@ import express from "express";
 import Attempt from "../models/attempt.js";
 import Quiz from "../models/quiz.js";
 import Question from "../models/question.js";
+import QuizInvitation from "../models/quizInvitation.js";
 import { authMiddleware } from "../middleware/auth.js";
 
 const router = express.Router();
@@ -33,6 +34,12 @@ router.post("/start", authMiddleware, async (req, res) => {
     const quiz = await Quiz.findById(quizId);
     if (!quiz || !quiz.isPublished) {
       return res.status(404).json({ message: "Quiz not available" });
+    }
+
+    // Check if user has an accepted invitation for this quiz
+    const invitation = await QuizInvitation.findOne({ quizId, userId, status: "accepted" });
+    if (!invitation) {
+      return res.status(403).json({ message: "You don't have an accepted invitation for this quiz." });
     }
 
     // Check if user already has an attempt for this quiz
@@ -208,4 +215,3 @@ router.get("/my-attempts", authMiddleware, async (req, res) => {
 });
 
 export default router;
-

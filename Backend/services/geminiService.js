@@ -61,7 +61,13 @@ async function generateQuiz(userPrompt) {
     throw new Error("Gemini response did not include quiz text");
   }
 
-  return JSON.parse(text);
+  // Strip markdown code fences if Gemini wraps the JSON
+  let cleanText = text.trim();
+  if (cleanText.startsWith("```")) {
+    cleanText = cleanText.replace(/^```(?:json)?\s*\n?/, "").replace(/\n?```\s*$/, "");
+  }
+
+  return JSON.parse(cleanText);
 }
 
 export default generateQuiz;

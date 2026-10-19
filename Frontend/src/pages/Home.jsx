@@ -26,27 +26,31 @@ function Home() {
 
 	const fetchQuizzes = async () => {
 		try {
-			const res = await axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quiz/quizzes`);
+			const token = localStorage.getItem("token");
+			if (!token) {
+				setLoading(false);
+				return;
+			}
+			const res = await axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quiz/quizzes`, {
+				headers: { Authorization: `Bearer ${token}` }
+			});
 			console.log("Quizzes response:", res.data);
 			setQuizzes(res.data.quizzes || []);
 
 			// Check results published status for each quiz
-			const token = localStorage.getItem("token");
-			if (token) {
-				const resultsMap = {};
-				for (const quiz of res.data.quizzes || []) {
-					try {
-						const resultRes = await axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quiz/result/${quiz._id}`, {
-							headers: { Authorization: `Bearer ${token}` }
-						});
-						resultsMap[quiz._id] = { published: true, score: resultRes.data.score, total: resultRes.data.totalQuestions };
-					} catch (err) {
-						// Result not available or not published
-						resultsMap[quiz._id] = { published: false };
-					}
+			const resultsMap = {};
+			for (const quiz of res.data.quizzes || []) {
+				try {
+					const resultRes = await axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quiz/result/${quiz._id}`, {
+						headers: { Authorization: `Bearer ${token}` }
+					});
+					resultsMap[quiz._id] = { published: true, score: resultRes.data.score, total: resultRes.data.totalQuestions };
+				} catch (err) {
+					// Result not available or not published
+					resultsMap[quiz._id] = { published: false };
 				}
-				setQuizResults(resultsMap);
 			}
+			setQuizResults(resultsMap);
 
 			setLoading(false);
 		} catch (err) {
@@ -126,9 +130,20 @@ function Home() {
 
 					<div className="flex items-center gap-4">
 						{user && (
-							<span className="text-slate-300 hidden sm:block">
-								Welcome, <span className="text-blue-400 font-medium">{user.name || user.email}</span>
-							</span>
+							<>
+								<span className="text-slate-300 hidden sm:block">
+									Welcome, <span className="text-blue-400 font-medium">{user.name || user.email}</span>
+								</span>
+								<button
+									onClick={() => navigate("/invitations")}
+									className="flex items-center gap-2 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/50 text-blue-400 hover:text-blue-300 px-4 py-2 rounded-xl transition-all duration-200"
+								>
+									<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+									</svg>
+									<span className="hidden sm:inline">Invitations</span>
+								</button>
+							</>
 						)}
 						<button
 							onClick={handleLogout}

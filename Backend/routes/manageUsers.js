@@ -24,6 +24,7 @@ manageUsersRouter.get("/users", async (req, res) => {
                     name: u.name,
                     email: u.email,
                     role: u.role,
+                    isApproved: u.isApproved,
                     attemptCount
                 };
             })
@@ -45,8 +46,8 @@ manageUsersRouter.patch("/users/:userId/role", async (req, res) => {
         const { userId } = req.params;
         const { role } = req.body;
 
-        if (!(["user", "admin"].includes(role))) {
-            return res.status(400).json({ error: "Invalid role. Must be 'user' or 'admin'." });
+        if (!(["user", "admin", "instructor"].includes(role))) {
+            return res.status(400).json({ error: "Invalid role. Must be 'user', 'instructor', or 'admin'." });
         }
 
         // Prevent admin from demoting themselves
@@ -86,6 +87,59 @@ manageUsersRouter.delete("/users/:userId", async (req, res) => {
         return res.status(200).json({ message: "User deleted successfully" });
     } catch (error) {
         return res.status(500).json({ error: "Failed to delete user", details: error.message });
+    }
+});
+
+// PATCH /api/admin/users/:userId/approve — approve an instructor (admin only)
+manageUsersRouter.patch("/users/:userId/approve", async (req, res) => {
+    try {
+        if (req.user.role !== "admin") {
+            return res.status(403).json({ error: "Access denied. Admin only." });
+        }
+
+        const { userId } = req.params;
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        if (user.role !== "instructor") {
+            return res.status(400).json({ error: "Only instructor accounts can be approved." });
+        }
+
+        user.isApproved = true;
+        await user.save();
+
+        return res.status(200).json({ message: "Instructor approved successfully", user: { _id: user._id, name: user.name, email: user.email, role: user.role, isApproved: user.isApproved } });
+    } catch (error) {
+        return res.status(500).json({ error: "Failed to approve instructor", details: error.message });
+    }
+});
+
+// PATCH /api/admin/users/:userId/reject — reject (delete) a pending instructor (admin only)
+manageUsersRouter.patch("/users/:userId/reject", async (req, res) => {
+    try {
+        if (req.user.role !== "admin") {
+            return res.status(403).json({ error: "Access denied. Admin only." });
+        }
+
+        const { userId } = req.params;
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        if (user.role !== "instructor" || user.isApproved) {
+            return res.status(400).json({ error: "Only pending instructor accounts can be rejected." });
+        }
+
+        await User.findByIdAndDelete(userId);
+
+        return res.status(200).json({ message: "Instructor rejected and account deleted." });
+    } catch (error) {
+        return res.status(500).json({ error: "Failed to reject instructor", details: error.message });
     }
 });
 

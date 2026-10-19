@@ -5,6 +5,7 @@ function VerifyOTP() {
   const navigate = useNavigate();
   const location = useLocation();
   const email = location.state?.email;
+  const role = location.state?.role || "user";
 
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
@@ -91,11 +92,18 @@ function VerifyOTP() {
         throw new Error(data.error || "Verification failed");
       }
 
-      // Successful verification
-      setMessage("Email verified successfully! Redirecting to login...");
-      setTimeout(() => {
-        navigate("/login");
-      }, 2000);
+      // Successful verification - check if instructor
+      if (role === "instructor") {
+        setMessage("Email verified! Your instructor account is pending admin approval.");
+        setTimeout(() => {
+          navigate("/pending-approval");
+        }, 2500);
+      } else {
+        setMessage("Email verified successfully! Redirecting to login...");
+        setTimeout(() => {
+          navigate("/login");
+        }, 2000);
+      }
     } catch (err) {
       setError(err.message);
     } finally {

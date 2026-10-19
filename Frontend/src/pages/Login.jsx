@@ -44,6 +44,11 @@ function Login() {
       }
     } catch (err) {
       console.error("Login error:", err);
+      // Check if this is a pending approval error
+      if (err.response?.data?.pendingApproval) {
+        navigate("/pending-approval", { replace: true });
+        return;
+      }
       setError(
         err.response?.data?.error || "Login failed"
       );
