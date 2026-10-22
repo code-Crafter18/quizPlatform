@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../api/axios";
 
 function ManageQuizzes() {
     const navigate = useNavigate();
@@ -41,10 +41,7 @@ function ManageQuizzes() {
 
     const fetchQuizzes = async () => {
         try {
-            const token = localStorage.getItem("token");
-            const res = await axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quiz/admin/quizzes`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const res = await api.get("/api/quiz/admin/quizzes");
             setQuizzes(res.data.quizzes);
         } catch (err) {
             console.error("Error fetching quizzes:", err);
@@ -57,12 +54,7 @@ function ManageQuizzes() {
     const handlePublish = async (quizId) => {
         setPublishing(quizId);
         try {
-            const token = localStorage.getItem("token");
-            await axios.patch(
-                `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quiz/${quizId}/publish`,
-                {},
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            await api.patch(`/api/quiz/${quizId}/publish`, {});
             // Refresh quizzes list
             fetchQuizzes();
         } catch (err) {
@@ -78,10 +70,7 @@ function ManageQuizzes() {
         setLoadingQuestions(true);
         setViewQuestions([]);
         try {
-            const token = localStorage.getItem("token");
-            const res = await axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quiz/${quiz._id}/view-questions`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const res = await api.get(`/api/quiz/${quiz._id}/view-questions`);
             setViewQuestions(res.data.questions || []);
         } catch (err) {
             console.error("Error fetching questions:", err);

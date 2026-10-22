@@ -15,7 +15,7 @@ router.post("/generate", async (req, res) => {
       return res.status(403).json({ error: "Only admins and instructors can generate quizzes" });
     }
 
-    const { prompt, timeLimit = 10, availableFor = 60 } = req.body;
+    const { prompt, timeLimit = 10, availableFor = 60, category = "General" } = req.body;
 
     if (!prompt) {
       return res.status(400).json({ error: "prompt is required" });
@@ -30,8 +30,9 @@ router.post("/generate", async (req, res) => {
     const quiz = await Quiz.create({
       title: generatedQuiz.title,
       description: generatedQuiz.description || "",
-      timeLimit,
-      availableFor,
+      category: typeof category === "string" && category.trim() ? category.trim() : "General",
+      timeLimit: Math.max(1, Number(timeLimit) || 10),
+      availableFor: Math.max(1, Number(availableFor) || 60),
       isPublished: false,
       createdBy: req.user._id,
     });
@@ -53,9 +54,10 @@ router.post("/generate", async (req, res) => {
       generatedQuiz,
     });
   } catch (err) {
-    console.error(err);
+    console.error("AI quiz generation error:", err);
     res.status(500).json({
       error: "Failed to generate quiz",
+      details: err.message
     });
   }
 });

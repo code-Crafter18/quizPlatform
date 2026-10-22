@@ -2,6 +2,7 @@
 
 :root {
     background-color: #0f172a;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
 html,
@@ -13,21 +14,39 @@ body,
 
 body {
     margin: 0;
+    overflow-x: hidden;
 }
 
-/* Hide scrollbar but keep scroll functionality */
-.scrollbar-hide,
-html,
-body {
-    -ms-overflow-style: none;
-    /* IE and Edge */
-    scrollbar-width: none;
-    /* Firefox */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
-.scrollbar-hide::-webkit-scrollbar,
-html::-webkit-scrollbar,
-body::-webkit-scrollbar {
-    display: none;
-    /* Chrome, Safari and Opera */
+.animate-fadeIn {
+    animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom smooth scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0f172a;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #475569;
 }

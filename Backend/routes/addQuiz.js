@@ -5,25 +5,36 @@ const addQuizRouter = express.Router();
 
 addQuizRouter.post("/addquiz", async (req, res) => {
     try {
-        const { title, description, timeLimit, availableFor } = req.body;
+        const { title, description, category, timeLimit, availableFor } = req.body;
 
-        if (req.user.role !== "instructor") {
-            return res.status(403).json({ error: "Only instructors can create quizzes." });
+        if (req.user.role !== "instructor" && req.user.role !== "admin") {
+            return res.status(403).json({ error: "Only instructors and admins can create quizzes." });
         }
 
         const createdBy = req.user._id;
 
         if (!title || !timeLimit) {
             return res.status(400).json({ 
-                error: "title and timeLimit are required fields" 
+                error: "Title and timeLimit are required fields." 
             });
         }
 
+        const parsedTimeLimit = Number(timeLimit);
+        if (isNaN(parsedTimeLimit) || parsedTimeLimit <= 0) {
+            return res.status(400).json({ error: "Time limit must be a positive number in minutes." });
+        }
+
+        const parsedAvailableFor = availableFor ? Number(availableFor) : 60;
+        if (isNaN(parsedAvailableFor) || parsedAvailableFor <= 0) {
+            return res.status(400).json({ error: "Available duration must be a positive number in minutes." });
+        }
+
         const newQuiz = await Quiz.create({
-            title,
-            description,
-            timeLimit,
-            availableFor: availableFor || 60,
+            title: title.trim(),
+            description: description ? description.trim() : "",
+            category: category ? category.trim() : "General",
+            timeLimit: parsedTimeLimit,
+            availableFor: parsedAvailableFor,
             isPublished: false,
             createdBy
         });

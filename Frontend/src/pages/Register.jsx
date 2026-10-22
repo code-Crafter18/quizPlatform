@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import api from "../api/axios";
 
 function Register() {
   const navigate = useNavigate();
@@ -27,26 +28,19 @@ function Register() {
       return;
     }
 
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return;
+    }
+
     setLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/user/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          role: role,
-        }),
+      await api.post("/api/user/register", {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role: role,
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Registration failed");
-      }
 
       // Registration successful - navigate to login or pending approval page
       if (role === "instructor") {
@@ -55,14 +49,14 @@ function Register() {
         navigate("/login", { replace: true });
       }
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.error || err.message || "Registration failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-slate-900/60 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-8 shadow-2xl">
         <h1 className="text-4xl font-bold text-white text-center mb-2">
           Register
@@ -148,7 +142,7 @@ function Register() {
             name="password"
             value={formData.password}
             onChange={handleChange}
-            placeholder="Create a password"
+            placeholder="Create a password (min 6 characters)"
             required
             className="w-full px-4 py-3 rounded-xl bg-slate-800/70 text-white placeholder-slate-400 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
           />
@@ -166,21 +160,30 @@ function Register() {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-3 rounded-xl text-white font-semibold hover:opacity-90 transition disabled:opacity-50 ${
+            className={`w-full py-3.5 rounded-xl text-white font-semibold hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2 ${
               role === "instructor"
-                ? "bg-gradient-to-r from-purple-600 to-indigo-600"
-                : "bg-gradient-to-r from-blue-600 to-indigo-600"
+                ? "bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg shadow-purple-500/25"
+                : "bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-500/25"
             }`}
           >
-            {loading ? "Registering..." : role === "instructor" ? "Register as Instructor" : "Register"}
+            {loading ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span>Registering...</span>
+              </>
+            ) : role === "instructor" ? (
+              "Register as Instructor"
+            ) : (
+              "Register"
+            )}
           </button>
         </form>
 
         <p className="text-sm text-slate-400 text-center mt-6">
           Already have an account?{" "}
-          <a href="/login" className="text-blue-500 hover:underline cursor-pointer">
+          <Link to="/login" className="text-blue-400 hover:text-blue-300 font-medium hover:underline cursor-pointer">
             Log in
-          </a>
+          </Link>
         </p>
       </div>
     </div>

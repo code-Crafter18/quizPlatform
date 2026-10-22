@@ -1,20 +1,6 @@
 import Attempt from "../models/attempt.js";
 import Quiz from "../models/quiz.js";
-import Question from "../models/question.js";
-
-// Helper function to calculate score
-const calculateScore = async (answers, quizId) => {
-  const questions = await Question.find({ quizId });
-  let score = 0;
-
-  for (const question of questions) {
-    const userAnswer = answers.find(a => a.questionId.toString() === question._id.toString());
-    if (userAnswer && userAnswer.selectedOption === question.correctOption) {
-      score++;
-    }
-  }
-  return score;
-};
+import { calculateScore } from "./scoring.js";
 
 // Auto-submit expired attempts
 const autoSubmitExpiredAttempts = async () => {

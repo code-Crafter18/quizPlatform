@@ -4,26 +4,9 @@ import Quiz from "../models/quiz.js";
 import Question from "../models/question.js";
 import QuizInvitation from "../models/quizInvitation.js";
 import { authMiddleware } from "../middleware/auth.js";
+import { calculateScore } from "../utils/scoring.js";
 
 const router = express.Router();
-
-// Helper function to calculate score from saved answers
-const calculateScore = async (answers, quizId) => {
-  const questions = await Question.find({ quizId });
-  let score = 0;
-
-  for (const question of questions) {
-    const userAnswer = answers.find(a => a.questionId.toString() === question._id.toString());
-    // Check that selectedOption is not null/undefined before comparing
-    if (userAnswer && 
-        userAnswer.selectedOption !== null && 
-        userAnswer.selectedOption !== undefined && 
-        userAnswer.selectedOption === question.correctOption) {
-      score++;
-    }
-  }
-  return score;
-};
 
 router.post("/start", authMiddleware, async (req, res) => {
   try {

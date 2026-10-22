@@ -1,57 +1,47 @@
 import { useState } from "react";
-import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
+import api from "../api/axios";
+import { useAuth } from "../context/AuthContext";
 
 function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setIsLoading(true);
 
     try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/user/login`,
-        { email, password }
-      );
+      const res = await api.post("/api/user/login", { email, password });
 
-      console.log("Login response:", res.data);
-
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem(
-        "user",
-        JSON.stringify(res.data.user)
-      );
+      login(res.data.user, res.data.token);
 
       setEmail("");
       setPassword("");
-      setError("");
 
       // Redirect based on user role
       if (res.data.user.role === "admin") {
-        console.log("Navigating to /admin...");
         navigate("/admin", { replace: true });
       } else if (res.data.user.role === "instructor") {
-        console.log("Navigating to /instructor...");
         navigate("/instructor", { replace: true });
       } else {
-        console.log("Navigating to /home...");
         navigate("/home", { replace: true });
       }
     } catch (err) {
-      console.error("Login error:", err);
-      // Check if this is a pending approval error
       if (err.response?.data?.pendingApproval) {
         navigate("/pending-approval", { replace: true });
         return;
       }
-      setError(
-        err.response?.data?.error || "Login failed"
-      );
+      setError(err.response?.data?.error || "Login failed. Please check your credentials.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -74,6 +64,7 @@ function Login() {
             </span>
             <input
               type="email"
+              required
               placeholder="Enter your email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -90,6 +81,7 @@ function Login() {
 
             <input
               type={showPassword ? "text" : "password"}
+              required
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -115,16 +107,24 @@ function Login() {
           </div>
 
           {error && (
-            <p className="text-red-400 text-sm text-center">
+            <p className="text-red-400 text-sm text-center bg-red-500/10 border border-red-500/20 rounded-xl py-2 px-3">
               {error}
             </p>
           )}
 
           <button
             type="submit"
-            className="w-full bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3.5 rounded-xl transition mt-2"
+            disabled={isLoading}
+            className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-semibold py-3.5 rounded-xl transition mt-2 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20"
           >
-            Log in
+            {isLoading ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span>Logging in...</span>
+              </>
+            ) : (
+              "Log in"
+            )}
           </button>
         </form>
 
@@ -132,7 +132,7 @@ function Login() {
           Didn&apos;t have an account?{" "}
           <Link
             to="/register"
-            className="text-blue-400 hover:text-blue-300 transition"
+            className="text-blue-400 hover:text-blue-300 font-medium transition"
           >
             Sign up
           </Link>

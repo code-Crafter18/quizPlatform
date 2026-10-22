@@ -242,4 +242,51 @@ analyticsRouter.get("/result/:quizId", async (req, res) => {
     }
 });
 
+// Get leaderboard for a quiz (available once results are published)
+analyticsRouter.get("/leaderboard/:quizId", async (req, res) => {
+    try {
+        const { quizId } = req.params;
+
+        const quiz = await Quiz.findById(quizId);
+        if (!quiz) {
+            return res.status(404).json({ error: "Quiz not found" });
+        }
+
+        if (!quiz.resultsPublished && !["admin", "instructor"].includes(req.user.role)) {
+            return res.status(403).json({ error: "Leaderboard is not published yet." });
+        }
+
+        const questionCount = await Question.countDocuments({ quizId });
+
+        const attempts = await Attempt.find({ quizId, isSubmitted: true })
+            .populate("userId", "name email")
+            .select("userId score startTime updatedAt")
+            .sort({ score: -1, updatedAt: 1 })
+            .lean();
+
+        const leaderboard = attempts.map((attempt, index) => {
+            const timeTakenSec = Math.max(0, Math.round((new Date(attempt.updatedAt) - new Date(attempt.startTime)) / 1000));
+            return {
+                rank: index + 1,
+                studentId: attempt.userId?._id,
+                studentName: attempt.userId?.name || "Student",
+                score: attempt.score,
+                totalMarks: questionCount,
+                percentage: questionCount > 0 ? Math.round((attempt.score / questionCount) * 100) : 0,
+                timeTakenSeconds: timeTakenSec,
+                isCurrentUser: attempt.userId?._id?.toString() === req.user._id?.toString()
+            };
+        });
+
+        return res.status(200).json({
+            quizTitle: quiz.title,
+            totalMarks: questionCount,
+            resultsPublished: quiz.resultsPublished,
+            leaderboard
+        });
+    } catch (error) {
+        return res.status(500).json({ error: "Failed to fetch leaderboard", details: error.message });
+    }
+});
+
 export default analyticsRouter;

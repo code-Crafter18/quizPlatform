@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../api/axios";
 
 function QuizLayout() {
     const { quizId } = useParams();
@@ -52,11 +52,7 @@ function QuizLayout() {
             const token = localStorage.getItem("token");
 
             // First, check/start attempt
-            const attemptRes = await axios.post(
-                `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quiz/start`,
-                { quizId },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            const attemptRes = await api.post("/api/quiz/start", { quizId });
 
             console.log("Attempt response:", attemptRes.data);
 
@@ -111,7 +107,7 @@ function QuizLayout() {
     const fetchQuestions = async () => {
         try {
             // Fetch questions for this quiz
-            const res = await axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quiz/${quizId}/questions`);
+            const res = await api.get(`/api/quiz/${quizId}/questions`);
             console.log("Questions response:", res.data);
             setQuestions(res.data.questions || []);
             setLoading(false);
@@ -136,12 +132,11 @@ function QuizLayout() {
 
         // Save answer to backend
         try {
-            const token = localStorage.getItem("token");
-            await axios.post(
-                `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quiz/save-answer`,
-                { attemptId, questionId, selectedOption: optionIndex },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            await api.post("/api/quiz/save-answer", {
+                attemptId,
+                questionId,
+                selectedOption: optionIndex
+            });
         } catch (err) {
             console.error("Error saving answer:", err);
         }
@@ -156,12 +151,11 @@ function QuizLayout() {
 
         // Save null answer to backend (remove)
         try {
-            const token = localStorage.getItem("token");
-            await axios.post(
-                `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quiz/save-answer`,
-                { attemptId, questionId, selectedOption: null },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            await api.post("/api/quiz/save-answer", {
+                attemptId,
+                questionId,
+                selectedOption: null
+            });
         } catch (err) {
             console.error("Error removing answer:", err);
         }
@@ -193,13 +187,7 @@ function QuizLayout() {
 
         try {
             setIsSubmitting(true);
-            const token = localStorage.getItem("token");
-
-            const res = await axios.post(
-                `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/quiz/submit`,
-                { attemptId },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            const res = await api.post("/api/quiz/submit", { attemptId });
 
             console.log("Quiz submitted:", res.data);
             setStatusType("success");
